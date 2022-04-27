@@ -9,11 +9,15 @@ class State:
         self.actions = {"up" : None, "down" : None, "left" : None, "right" : None}
 
 class World:
-    def __init__(self, h, w, terminal_state, terminal_value) -> None:
+    def __init__(self, h, w, terminal_state, terminal_value, discount, reward, policy, transitionModel) -> None:
         self.h = h
         self.w = w
         self.num_states = h * w
         self.states = self.populate(terminal_state, terminal_value)
+        self.discount = discount
+        self.reward = reward
+        self.policy = policy
+        self.transitionModel = transitionModel
         self.mapActions()
 
     def populate(self, terminal_state, terminal_value):
@@ -54,25 +58,25 @@ class World:
                 row += str(self.getState(x, y).value) + " "
             print(row)
 
-    def maxActionValue(self, state, reward, discount, transitionModel):
+    def maxActionValue(self, state):
         max_action_value = -inf
         if state.term: return state.value
         for action in state.actions:
-            action_value = self.actionValue(state, action, reward, discount, transitionModel)
+            action_value = self.actionValue(state, action)
             if action_value > max_action_value: max_action_value = action_value
         return max_action_value
 
-    def actionValue(self, state, action, reward, discount, transitionModel):
+    def actionValue(self, state, action):
         if state.term: return state.value
         action_value = 0
         for next_state in self.states:
-            action_value += transitionModel(state, action, next_state) * (reward + discount * next_state.value) 
+            action_value += self.transitionModel(state, action, next_state) * (self.reward + self.discount * next_state.value) 
         return action_value
 
-    def updateWorld(self, reward, discount, transitionModel):
+    def updateWorld(self):
         new_state_values = []
         for state in self.states:
-            new_state_values.append(self.maxActionValue(state, reward, discount, transitionModel))
+            new_state_values.append(self.policy(self, state))
         for i in range(self.num_states):
             self.states[i].value = new_state_values[i]
 
@@ -86,34 +90,16 @@ def transitionModel(state, action, nextState):
         elif state.actions["up"] == nextState or state.actions["down"] == nextState: return .1
         else: return 0
 
+def maxPolicy(self, state):
+    return self.maxActionValue(state)
+
 k = 5
 discount = .99
-reward = 10
-print("Reward = ", reward)
-world = World(3, 3, 8, 10)
-world.printWorld()
-for i in range(k):
-    print("Update: ", i)
-    world.updateWorld(reward, discount, transitionModel)
+for reward in [10, 0, -100]:
+    print("Reward = ", reward)
+    world = World(3, 3, 8, 10, discount, reward, maxPolicy, transitionModel)
     world.printWorld()
-
-reward = 0
-print("Reward = ", reward)
-world = World(3, 3, 8, 10)
-world.printWorld()
-for i in range(k):
-    print("Update: ", i)
-    world.updateWorld(reward, discount, transitionModel)
-    world.printWorld()
-
-
-reward = -100
-print("Reward = ", reward)
-world = World(3, 3, 8, 10)
-world.printWorld()
-for i in range(k):
-    print("Update: ", i)
-    world.updateWorld(reward, discount, transitionModel)
-    world.printWorld()
-
-
+    for i in range(k):
+        print("Update: ", i)
+        world.updateWorld()
+        world.printWorld()
