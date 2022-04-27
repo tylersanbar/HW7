@@ -7,6 +7,9 @@ class State:
         self.term = term
         self.value = value
         self.actions = {"up" : None, "down" : None, "left" : None, "right" : None}
+    
+    def __repr__(self) -> str:
+        return "(" + str(self.x) + "," + str(self.y) + ")"
 
 class World:
     def __init__(self, h, w, terminal_state, terminal_value, discount, reward, policy, transitionModel) -> None:
@@ -65,6 +68,17 @@ class World:
             action_value = self.actionValue(state, action)
             if action_value > max_action_value: max_action_value = action_value
         return max_action_value
+    
+    def maxAction(self, state):
+        max_action_value = -inf
+        max_action = None
+        if state.term: return "exit"
+        for action in state.actions:
+            action_value = self.actionValue(state, action)
+            if action_value > max_action_value: 
+                max_action_value = action_value
+                max_action = action
+        return max_action
 
     def actionValue(self, state, action):
         if state.term: return state.value
@@ -76,9 +90,17 @@ class World:
     def updateWorld(self):
         new_state_values = []
         for state in self.states:
-            new_state_values.append(self.policy(self, state))
+            new_state_values.append(self.actionValue(state, self.policy(self, state)))
         for i in range(self.num_states):
             self.states[i].value = new_state_values[i]
+    
+    def updatePolicy(self):
+        for state in self.policyMap.keys():
+            self.policyMap[state] = self.maxAction(state)
+    
+    def printPolicy(self):
+        for state in self.policyMap.keys():
+            print("State: ", state, ", Action: ", self.policyMap[state])
 
 def transitionModel(state, action, nextState):
     if action == "up" or action ==  "down":
@@ -91,15 +113,36 @@ def transitionModel(state, action, nextState):
         else: return 0
 
 def maxPolicy(self, state):
-    return self.maxActionValue(state)
+    return self.maxAction(state)
 
-k = 5
-discount = .99
-for reward in [10, 0, -100]:
-    print("Reward = ", reward)
-    world = World(3, 3, 8, 10, discount, reward, maxPolicy, transitionModel)
-    world.printWorld()
-    for i in range(k):
-        print("Update: ", i)
-        world.updateWorld()
+def eastPolicy(self, state):
+    try:
+        return self.policyMap[state]
+    except:
+        self.policyMap = { key : "right" for key in self.states }
+        return self.policyMap[state]
+
+def exercise1a():
+    k = 5
+    discount = .99
+    for reward in [10, 0, -100]:
+        print("Reward = ", reward)
+        world = World(3, 3, 8, 10, discount, reward, maxPolicy, transitionModel)
         world.printWorld()
+        for i in range(k):
+            print("Update: ", i)
+            world.updateWorld()
+            world.printWorld()
+
+def exercise1b():
+    k = 2
+    discount = .99
+    reward = 0
+    world = World(3, 3, 8, 10, discount, reward, eastPolicy, transitionModel)
+    world.printWorld()
+    world.updateWorld()
+    world.printWorld()
+    world.updatePolicy()
+    world.printPolicy()
+
+exercise1b()
