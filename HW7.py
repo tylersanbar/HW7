@@ -123,26 +123,30 @@ def eastPolicy(self, state):
         return self.policyMap[state]
 
 def exercise1a():
+    print("Question 1a")
     k = 5
     discount = .99
     for reward in [10, 0, -100]:
         print("Reward = ", reward)
         world = World(3, 3, 8, 10, discount, reward, maxPolicy, transitionModel)
-        world.printWorld()
         for i in range(k):
-            print("Update: ", i)
             world.updateWorld()
-            world.printWorld()
+        print("Values")
+        world.printWorld()
 
 def exercise1b():
+    print("Question 1b")
     k = 2
     discount = .99
     reward = 0
     world = World(3, 3, 8, 10, discount, reward, eastPolicy, transitionModel)
-    world.printWorld()
-    world.updateWorld()
-    world.printWorld()
+    for i in range(k):
+        world.updateWorld()
     world.updatePolicy()
+    print("Values")
+    world.printWorld()
+    print("Policy")
     world.printPolicy()
 
+exercise1a()
 exercise1b()
